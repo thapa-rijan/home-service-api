@@ -24,9 +24,7 @@ import { AuthorizationGuard } from 'src/core/guard/authorization-guard';
 export class ProviderController {
   constructor(private readonly providerService: ProviderService) {}
 
-  /**
-   * Get all providers — all authenticated roles (via authorization table)
-   */
+  // Get all providers (all authenticated roles)
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get all providers (all authenticated roles)' })
@@ -40,9 +38,8 @@ export class ProviderController {
     return this.providerService.getAllProviders(Number(page), Number(size));
   }
 
-  /**
-   * Get provider by ID — all authenticated roles (via authorization table)
-   */
+  // Get provider by ID — all authenticated roles (via authorization table)
+
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get provider by ID (all authenticated roles)' })
