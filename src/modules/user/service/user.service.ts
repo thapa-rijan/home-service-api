@@ -11,40 +11,57 @@ export class UserService {
     private readonly userRepository: Repository<User>,
   ) {}
 
-  /**
-   * Get all users (excludes password). Admin only.
-   */
-  async getAllUsers(): Promise<{
-    message: string;
-    data: Omit<User, 'password'>[];
-  }> {
-    const users = await this.userRepository.find();
+  async getAllUser(
+    page: number = 1,
+    size: number = 10,
+  ): Promise<{ message: string; data: object[]; paginationMeta: object }> {
+    const skip = (page - 1) * size;
 
-    const sanitized = users.map(({ password: _p, ...rest }) => rest) as Omit<
-      User,
-      'password'
-    >[];
+    const [users, total] = await this.userRepository.findAndCount({
+      skip,
+      take: size,
+    });
 
-    return { message: 'Users fetched successfully', data: sanitized };
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const sanitized = users.map(({ password: _p, ...rest }) => rest);
+
+    return {
+      message: 'Users fetched successfully',
+      data: sanitized,
+      paginationMeta: { page, size, total },
+    };
   }
 
   /**
    * Get all customers (role = CUSTOMER). Admin only.
    */
-  async getAllCustomers(): Promise<{
+  async getAllCustomers(
+    page: number = 1,
+    size: number = 10,
+  ): Promise<{
     message: string;
     data: Omit<User, 'password'>[];
+    paginationMeta: object;
   }> {
-    const users = await this.userRepository.find({
+    const skip = (page - 1) * size;
+
+    const [users, total] = await this.userRepository.findAndCount({
       where: { role: RoleEnum.CUSTOMER },
+      skip,
+      take: size,
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const sanitized = users.map(({ password: _p, ...rest }) => rest) as Omit<
       User,
       'password'
     >[];
 
-    return { message: 'Customers fetched successfully', data: sanitized };
+    return {
+      message: 'Customers fetched successfully',
+      data: sanitized,
+      paginationMeta: { page, size, total },
+    };
   }
 
   /**

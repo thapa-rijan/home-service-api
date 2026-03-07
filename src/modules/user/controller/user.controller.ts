@@ -4,6 +4,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -23,36 +24,35 @@ import { AuthorizationGuard } from 'src/core/guard/authorization-guard';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  /**
-   * Get all users — ADMIN only (via authorization table)
-   */
+  // Get all users (Admin only)
   @Get()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get all users (Admin only)' })
   @ApiResponse({ status: 200, description: 'Users fetched successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  getAllUsers() {
-    return this.userService.getAllUsers();
+  getAllUsers(
+    @Query('page') page: string = '1',
+    @Query('size') size: string = '10',
+  ) {
+    return this.userService.getAllUser(Number(page), Number(size));
   }
 
-  /**
-   * Get all customers — ADMIN only (via authorization table)
-   */
+  // Get all customers (Admin only)
   @Get('customers')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get all customers (Admin only)' })
   @ApiResponse({ status: 200, description: 'Customers fetched successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  getAllCustomers() {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return this.userService.getAllCustomers();
+  getAllCustomers(
+    @Query('page') page: string = '1',
+    @Query('size') size: string = '10',
+  ) {
+    return this.userService.getAllCustomers(Number(page), Number(size));
   }
 
-  /**
-   * Get user by ID — ADMIN and CUSTOMER (via authorization table)
-   */
+  // Get user by ID (Admin and Customer)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Get user by ID (Admin and Customer)' })
