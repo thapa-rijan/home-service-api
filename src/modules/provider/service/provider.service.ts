@@ -38,9 +38,8 @@ export class ProviderService {
     };
   }
 
-  /**
-   * Get a single provider by provider ID with linked user info (password excluded).
-   */
+  // Get provider by ID (all authenticated roles via authorization table)
+
   async getProviderById(
     id: string,
   ): Promise<{ message: string; data: object }> {
