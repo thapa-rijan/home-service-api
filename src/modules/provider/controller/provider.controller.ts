@@ -4,6 +4,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -32,8 +33,11 @@ export class ProviderController {
   @ApiResponse({ status: 200, description: 'Providers fetched successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   @ApiResponse({ status: 403, description: 'Forbidden' })
-  getAllProviders() {
-    return this.providerService.getAllProviders();
+  getAllProviders(
+    @Query('page') page: string = '1',
+    @Query('size') size: string = '10',
+  ) {
+    return this.providerService.getAllProviders(Number(page), Number(size));
   }
 
   /**

@@ -10,24 +10,32 @@ export class ProviderService {
     private readonly providerRepository: Repository<Provider>,
   ) {}
 
-  /**
-   * Get all providers with their linked user info (password excluded).
-   */
-  async getAllProviders(): Promise<{ message: string; data: object[] }> {
-    const providers = await this.providerRepository.find({
+  async getAllProviders(
+    page: number = 1,
+    size: number = 10,
+  ): Promise<{ message: string; data: object[]; paginationMeta: object }> {
+    const skip = (page - 1) * size;
+
+    const [providers, total] = await this.providerRepository.findAndCount({
       relations: ['user', 'user.phoneNumbers'],
+      skip,
+      take: size,
     });
 
     const sanitized = providers.map(({ user, ...providerRest }) => {
       if (user) {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const { password: _p, ...userRest } = user;
+        const { password: _password, ...userRest } = user;
         return { ...providerRest, user: userRest };
       }
       return providerRest;
     });
 
-    return { message: 'Providers fetched successfully', data: sanitized };
+    return {
+      message: 'Providers fetched successfully',
+      data: sanitized,
+      paginationMeta: { page, size, total },
+    };
   }
 
   /**
@@ -50,7 +58,7 @@ export class ProviderService {
 
     if (user) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { password: _p, ...userRest } = user;
+      const { password: _password, ...userRest } = user;
       result = { ...providerRest, user: userRest };
     }
 
