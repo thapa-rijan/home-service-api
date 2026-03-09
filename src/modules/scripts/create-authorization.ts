@@ -97,6 +97,15 @@ function getAdminPermissions(role: Role): Authorization[] {
     // Providers module
     setAuthorizationPermissions(role, '/providers', [...readOnlyMethods]),
     setAuthorizationPermissions(role, '/providers/:id', [...readOnlyMethods]),
+    // Categories module
+    setAuthorizationPermissions(role, '/categories', [
+      ...readOnlyMethods,
+      'POST',
+    ]),
+    setAuthorizationPermissions(role, '/categories/:id', [
+      ...readOnlyMethods,
+      ...writeMethods,
+    ]),
   ];
 }
 
@@ -106,6 +115,9 @@ function getCustomerPermissions(role: Role): Authorization[] {
     setAuthorizationPermissions(role, '/users/:id', [...readOnlyMethods]),
     setAuthorizationPermissions(role, '/providers', [...readOnlyMethods]),
     setAuthorizationPermissions(role, '/providers/:id', [...readOnlyMethods]),
+    // Categories module - customers can view categories
+    setAuthorizationPermissions(role, '/categories', [...readOnlyMethods]),
+    setAuthorizationPermissions(role, '/categories/:id', [...readOnlyMethods]),
   ];
 }
 
@@ -114,6 +126,9 @@ function getProviderPermissions(role: Role): Authorization[] {
     // Providers can browse other providers
     setAuthorizationPermissions(role, '/providers', [...readOnlyMethods]),
     setAuthorizationPermissions(role, '/providers/:id', [...readOnlyMethods]),
+    // Categories module - providers can view categories
+    setAuthorizationPermissions(role, '/categories', [...readOnlyMethods]),
+    setAuthorizationPermissions(role, '/categories/:id', [...readOnlyMethods]),
   ];
 }
 
@@ -126,13 +141,13 @@ async function createAuthorization() {
     await createRolesIfNotExist(AppDataSource);
 
     const roleRepository = AppDataSource.getRepository(Role);
-    /* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
     const results = await Promise.all([
       roleRepository.findOne({ where: { role: RoleEnum.ADMIN } }),
       roleRepository.findOne({ where: { role: RoleEnum.CUSTOMER } }),
       roleRepository.findOne({ where: { role: RoleEnum.PROVIDER } }),
     ]);
-    /* eslint-enable @typescript-eslint/no-unsafe-assignment */
+
     const [adminRole, customerRole, providerRole] = results;
 
     if (!adminRole || !customerRole || !providerRole) {

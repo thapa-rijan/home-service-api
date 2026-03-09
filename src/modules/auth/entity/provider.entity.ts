@@ -29,7 +29,7 @@ export class Provider {
   @Column({ type: 'int', default: 0 })
   jobCompleted: number;
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+   
   @OneToOne(() => User, (user: User) => user.provider, {
     onDelete: 'CASCADE',
   })

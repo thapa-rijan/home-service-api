@@ -17,6 +17,7 @@ import { AuthService } from '../service/auth.service';
 import { LoginDTO } from '../dto/login.dto';
 import { SignUpDto } from '../dto/signup.dto';
 import { RefreshTokenDto } from '../dto/refresh-token.dto';
+import { LoginResponseDto } from '../dto/login-response.dto';
 import { AuthUser } from 'src/common/interfaces/authRequest';
 
 @ApiTags('Authentication')
@@ -51,6 +52,7 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Login successful',
+    type: LoginResponseDto,
   })
   @ApiResponse({
     status: 401,
