@@ -17,7 +17,7 @@ export class PhoneNumber {
   @Column()
   phoneNumber: string;
 
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+   
   @ManyToOne(() => User, (user: User) => user.phoneNumbers, {
     nullable: false,
     onDelete: 'CASCADE',

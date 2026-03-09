@@ -65,11 +65,7 @@ export class AuthService {
    */
   generateAccessTokenFromRefreshToken(refreshToken: string): string {
     try {
-      const decoded = this.jwtService.verify(refreshToken) as JwtPayload & {
-        exp?: number;
-        iat?: number;
-        nbf?: number;
-      };
+      const decoded = this.jwtService.verify(refreshToken);
 
       // Create clean payload with only our custom properties
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -89,11 +85,7 @@ export class AuthService {
    */
   generateRefreshTokenFromRefreshToken(refreshToken: string): string {
     try {
-      const decoded = this.jwtService.verify(refreshToken) as JwtPayload & {
-        exp?: number;
-        iat?: number;
-        nbf?: number;
-      };
+      const decoded = this.jwtService.verify(refreshToken);
 
       // Create clean payload with only our custom properties
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -277,7 +269,7 @@ export class AuthService {
     const payload: JwtPayload = {
       sub: user.id,
       name: user.fullName,
-      role: user.role as RoleEnum,
+      role: user.role,
       address: user.address,
     };
 
