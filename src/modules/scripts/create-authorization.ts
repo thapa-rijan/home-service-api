@@ -5,6 +5,10 @@ import { Authorization } from '../auth/entity/authorization';
 import { User } from '../auth/entity/user.entity';
 import { PhoneNumber } from '../auth/entity/phone-number.entity';
 import { Provider } from '../auth/entity/provider.entity';
+import { IdentityProof } from '../auth/entity/identity-proof.entity';
+import { Service } from '../services/entity/service.entity';
+import { File } from '../fileUpload/entity/file.entity';
+import { Category } from '../category/entity/category.entity';
 import { DataSource } from 'typeorm';
 import { RoleEnum } from 'src/common';
 import { StringUtils } from 'src/core';
@@ -34,20 +38,25 @@ async function dropStaleTables() {
   await rawDs.initialize();
   await rawDs.query(`DROP TABLE IF EXISTS "authorization" CASCADE`);
   await rawDs.query(`DROP TABLE IF EXISTS "role" CASCADE`);
-  await rawDs.query(`DROP TABLE IF EXISTS "phone_number" CASCADE`);
-  await rawDs.query(`DROP TABLE IF EXISTS "provider" CASCADE`);
-  await rawDs.query(`DROP TABLE IF EXISTS "user" CASCADE`);
   // Drop stale enum types so Postgres accepts the new values
   await rawDs.query(`DROP TYPE IF EXISTS "public"."role_role_enum" CASCADE`);
-  await rawDs.query(`DROP TYPE IF EXISTS "public"."user_role_enum" CASCADE`);
-  await rawDs.query(`DROP TYPE IF EXISTS "public"."user_status_enum" CASCADE`);
   await rawDs.destroy();
   console.log('Dropped stale tables and enum types.');
 }
 
 const AppDataSource = new DataSource({
   ...dbConfig,
-  entities: [Authorization, Role, User, PhoneNumber, Provider],
+  entities: [
+    Authorization,
+    Role,
+    User,
+    PhoneNumber,
+    Provider,
+    IdentityProof,
+    Service,
+    File,
+    Category,
+  ],
   synchronize: true,
 });
 
@@ -129,6 +138,21 @@ function getProviderPermissions(role: Role): Authorization[] {
     // Categories module - providers can view categories
     setAuthorizationPermissions(role, '/categories', [...readOnlyMethods]),
     setAuthorizationPermissions(role, '/categories/:id', [...readOnlyMethods]),
+    // File upload
+    setAuthorizationPermissions(role, '/uploadFile', ['POST']),
+    setAuthorizationPermissions(role, '/updateFile', ['PATCH']),
+    // Profile completion
+    setAuthorizationPermissions(role, '/users/profile', ['PATCH']),
+  ];
+}
+
+function getGuestPermissions(role: Role): Authorization[] {
+  return [
+    // Guests can upload files (for identity proofs during profile completion)
+    setAuthorizationPermissions(role, '/uploadFile', ['POST']),
+    setAuthorizationPermissions(role, '/updateFile', ['PATCH']),
+    // Guests can complete their profile
+    setAuthorizationPermissions(role, '/users/profile', ['PATCH']),
   ];
 }
 
@@ -146,11 +170,12 @@ async function createAuthorization() {
       roleRepository.findOne({ where: { role: RoleEnum.ADMIN } }),
       roleRepository.findOne({ where: { role: RoleEnum.CUSTOMER } }),
       roleRepository.findOne({ where: { role: RoleEnum.PROVIDER } }),
+      roleRepository.findOne({ where: { role: RoleEnum.GUEST } }),
     ]);
 
-    const [adminRole, customerRole, providerRole] = results;
+    const [adminRole, customerRole, providerRole, guestRole] = results;
 
-    if (!adminRole || !customerRole || !providerRole) {
+    if (!adminRole || !customerRole || !providerRole || !guestRole) {
       throw new Error('One or more roles not found');
     }
 
@@ -158,13 +183,14 @@ async function createAuthorization() {
       ...getAdminPermissions(adminRole),
       ...getCustomerPermissions(customerRole),
       ...getProviderPermissions(providerRole),
+      ...getGuestPermissions(guestRole),
     ];
 
     // console.log('Authorizations to save:', authorizations);
 
     await AppDataSource.manager.save(Authorization, authorizations);
     console.log('Saved authorizations!');
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error creating Authorization:', error);
   } finally {
     await AppDataSource.destroy();

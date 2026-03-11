@@ -7,6 +7,10 @@ import { Role } from '../auth/entity/role.entity';
 import { User } from '../auth/entity/user.entity';
 import { PhoneNumber } from '../auth/entity/phone-number.entity';
 import { Provider } from '../auth/entity/provider.entity';
+import { IdentityProof } from '../auth/entity/identity-proof.entity';
+import { Service } from '../services/entity/service.entity';
+import { File } from '../fileUpload/entity/file.entity';
+import { Category } from '../category/entity/category.entity';
 import { StringUtils } from 'src/core';
 import { RoleEnum } from 'src/common';
 dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
@@ -41,7 +45,17 @@ async function dropUserTables() {
 const AppDataSource = new DataSource({
   ...dbConfig,
   synchronize: true,
-  entities: [Authorization, Role, User, PhoneNumber, Provider],
+  entities: [
+    Authorization,
+    Role,
+    User,
+    PhoneNumber,
+    Provider,
+    IdentityProof,
+    Service,
+    File,
+    Category,
+  ],
 });
 
 async function createAdminUser() {
@@ -83,7 +97,7 @@ async function createAdminUser() {
 
     console.log(` Admin user created successfully! (id: ${savedUser.id})`);
     process.exit(0);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error creating admin user:', error);
     process.exit(1);
   }

@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { PhoneNumber } from './phone-number.entity';
 import { Provider } from './provider.entity';
+import { IdentityProof } from './identity-proof.entity';
 
 @Entity()
 export class User {
@@ -28,10 +29,31 @@ export class User {
   @Column({ nullable: true })
   address: string;
 
+  @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
+  latitude: number;
+
+  @Column({ type: 'decimal', precision: 10, scale: 7, nullable: true })
+  longitude: number;
+
+  @Column({ nullable: true })
+  phoneNumber: string;
+
+  @Column({ nullable: true })
+  serviceName: string;
+
+  @Column({ type: 'int', nullable: true })
+  experienceYear: number;
+
+  @Column({ nullable: true })
+  workingHourFrom: string;
+
+  @Column({ nullable: true })
+  workingHourTo: string;
+
   @Column({ type: 'enum', enum: UserStatus, default: UserStatus.ACTIVE })
   status: UserStatus;
 
-  @Column({ type: 'enum', enum: RoleEnum })
+  @Column({ type: 'enum', enum: RoleEnum, default: RoleEnum.GUEST })
   role: RoleEnum;
 
   @OneToMany(() => PhoneNumber, (phone) => phone.user, {
@@ -39,6 +61,12 @@ export class User {
     eager: true,
   })
   phoneNumbers: PhoneNumber[];
+
+  @OneToMany(() => IdentityProof, (proof: IdentityProof) => proof.user, {
+    cascade: true,
+    eager: true,
+  })
+  identityProofs: IdentityProof[];
 
   @OneToOne(() => Provider, (provider) => provider.user, {
     cascade: true,

@@ -1,10 +1,13 @@
 import {
+  Body,
   Controller,
   Get,
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import {
@@ -16,6 +19,8 @@ import {
 import { UserService } from '../service/user.service';
 import { JwtAuthGuard } from 'src/core/guard/jwt-guard';
 import { AuthorizationGuard } from 'src/core/guard/authorization-guard';
+import { CompleteProfileDto } from '../dto/complete-profile.dto';
+import { AuthUser } from 'src/common/interfaces/authRequest';
 
 @ApiTags('Users')
 @ApiBearerAuth()
@@ -23,6 +28,17 @@ import { AuthorizationGuard } from 'src/core/guard/authorization-guard';
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
+
+  // Complete profile (authenticated user)
+  @Patch('profile')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Complete user profile' })
+  @ApiResponse({ status: 200, description: 'Profile completed successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 404, description: 'User not found' })
+  completeProfile(@Req() req: AuthUser, @Body() dto: CompleteProfileDto) {
+    return this.userService.completeProfile(req.user.sub, dto);
+  }
 
   // Get all users (Admin only)
   @Get()

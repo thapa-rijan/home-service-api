@@ -1,5 +1,4 @@
-export enum FileType {
-  SERVICE = 'SERVICE',
+export enum IdentityProofType {
   CITIZENSHIP = 'CITIZENSHIP',
   WORKING_CERTIFICATE = 'WORKING_CERTIFICATE',
   IDENTITY_PROOF = 'IDENTITY_PROOF',
