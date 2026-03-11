@@ -11,6 +11,9 @@ import { Provider } from './modules/auth/entity/provider.entity';
 import { Authorization } from './modules/auth/entity/authorization';
 import { Role } from './modules/auth/entity/role.entity';
 import { Category } from './modules/category/entity/category.entity';
+import { Service } from './modules/services/entity/service.entity';
+import { File } from './modules/fileUpload/entity/file.entity';
+import { FileUploadModule } from './modules/fileUpload/fileUpload.module';
 
 @Module({
   imports: [
@@ -24,7 +27,16 @@ import { Category } from './modules/category/entity/category.entity';
       username: process.env.DB_USERNAME,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      entities: [User, PhoneNumber, Provider, Authorization, Role, Category],
+      entities: [
+        User,
+        PhoneNumber,
+        Provider,
+        Authorization,
+        Role,
+        Category,
+        Service,
+        File,
+      ],
       synchronize: true, // Set to false in production
       logging: false,
     }),
@@ -32,6 +44,7 @@ import { Category } from './modules/category/entity/category.entity';
     UserModule,
     ProviderModule,
     CategoryModule,
+    FileUploadModule,
   ],
   controllers: [],
   providers: [],
