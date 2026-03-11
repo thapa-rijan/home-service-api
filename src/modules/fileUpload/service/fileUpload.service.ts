@@ -27,6 +27,42 @@ export class FileuploadService {
       errorMessage:
         'Service image must be an image file (JPEG, PNG, JPG, WEBP)',
     },
+    [FileType.CITIZENSHIP]: {
+      allowedMimeTypes: [
+        'image/jpeg',
+        'image/png',
+        'image/jpg',
+        'image/webp',
+        'application/pdf',
+      ],
+      metaType: FileMetaType.IMAGE,
+      errorMessage:
+        'Citizenship document must be an image (JPEG, PNG, JPG, WEBP) or PDF',
+    },
+    [FileType.WORKING_CERTIFICATE]: {
+      allowedMimeTypes: [
+        'image/jpeg',
+        'image/png',
+        'image/jpg',
+        'image/webp',
+        'application/pdf',
+      ],
+      metaType: FileMetaType.IMAGE,
+      errorMessage:
+        'Working certificate must be an image (JPEG, PNG, JPG, WEBP) or PDF',
+    },
+    [FileType.IDENTITY_PROOF]: {
+      allowedMimeTypes: [
+        'image/jpeg',
+        'image/png',
+        'image/jpg',
+        'image/webp',
+        'application/pdf',
+      ],
+      metaType: FileMetaType.IMAGE,
+      errorMessage:
+        'Identity proof must be an image (JPEG, PNG, JPG, WEBP) or PDF',
+    },
   };
 
   private validateFile(file: Express.Multer.File, type: FileType): void {
@@ -44,7 +80,8 @@ export class FileuploadService {
     }
   }
 
-  private getMetaType(type: FileType): FileMetaType {
+  private getMetaType(type: FileType, file: Express.Multer.File): FileMetaType {
+    if (file.mimetype === 'application/pdf') return FileMetaType.PDF;
     return this.FILE_TYPE_RULES[type]?.metaType ?? FileMetaType.IMAGE;
   }
 
@@ -65,7 +102,7 @@ export class FileuploadService {
       endpointUrl,
       bucket,
       type,
-      metaType: this.getMetaType(type),
+      metaType: this.getMetaType(type, file),
     });
 
     return this.fileRepository.save(fileRecord);
@@ -107,7 +144,7 @@ export class FileuploadService {
     existingFile.key = key;
     existingFile.endpointUrl = endpointUrl;
     existingFile.bucket = bucket;
-    existingFile.metaType = this.getMetaType(type);
+    existingFile.metaType = this.getMetaType(type, file);
 
     return this.fileRepository.save(existingFile);
   }

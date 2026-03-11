@@ -9,10 +9,9 @@ import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from 'src/common/interfaces/jwtPayload';
 import { LoginDTO } from '../dto/login.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { User } from '../entity/user.entity';
-import { PhoneNumber } from '../entity/phone-number.entity';
 import { Provider } from '../entity/provider.entity';
 import { SignUpDto } from '../dto/signup.dto';
 import { RoleEnum } from 'src/common/enum/role.enum';
@@ -27,8 +26,6 @@ export class AuthService {
     private readonly configService: ConfigService,
     @InjectRepository(User)
     private readonly userRepository: Repository<User>,
-    @InjectRepository(PhoneNumber)
-    private readonly phoneNumberRepository: Repository<PhoneNumber>,
     @InjectRepository(Provider)
     private readonly providerRepository: Repository<Provider>,
     private readonly validateEmail: EmailDomainValidationService,
@@ -125,24 +122,6 @@ export class AuthService {
   async signUp(
     signUpRequest: SignUpDto,
   ): Promise<{ message: string; data: object }> {
-    // Block Admin self-registration
-    if (signUpRequest.role === RoleEnum.ADMIN) {
-      throw new BadRequestException('Cannot register as Admin on signup');
-    }
-
-    // Require provider fields when role is PROVIDER
-    if (signUpRequest.role === RoleEnum.PROVIDER) {
-      if (
-        signUpRequest.experienceYear === undefined ||
-        signUpRequest.ratePerHour === undefined ||
-        !signUpRequest.specialization
-      ) {
-        throw new BadRequestException(
-          'experienceYear, ratePerHour and specialization are required for PROVIDER signup',
-        );
-      }
-    }
-
     // Check for duplicate email
     const existingEmail = await this.userRepository.findOne({
       where: { email: signUpRequest.email },
@@ -150,16 +129,6 @@ export class AuthService {
     if (existingEmail) {
       throw new BadRequestException(
         `Email ${signUpRequest.email} is already registered`,
-      );
-    }
-
-    // Check for duplicate phone numbers
-    const duplicatePhone = await this.phoneNumberRepository.findOne({
-      where: { phoneNumber: In(signUpRequest.phoneNumbers) },
-    });
-    if (duplicatePhone) {
-      throw new BadRequestException(
-        `Phone number ${duplicatePhone.phoneNumber} is already registered`,
       );
     }
 
@@ -174,69 +143,24 @@ export class AuthService {
     // Hash password
     const hashedPassword = await bcrypt.hash(signUpRequest.password, 10);
 
-    // Build User entity
+    // Build User entity — default role is GUEST
     const userId = `US_${StringUtils.generateRandomAlphaNumeric(10)}`;
     const userEntity = this.userRepository.create({
       id: userId,
       fullName: signUpRequest.fullName,
       email: signUpRequest.email,
       password: hashedPassword,
-      role: signUpRequest.role,
-      address: signUpRequest.address,
+      role: RoleEnum.GUEST,
     });
 
     const savedUser = await this.userRepository.save(userEntity);
 
-    // Save phone numbers
-    const phoneEntities = signUpRequest.phoneNumbers.map((num) =>
-      this.phoneNumberRepository.create({
-        id: `PH_${StringUtils.generateRandomAlphaNumeric(10)}`,
-        phoneNumber: num,
-        user: savedUser,
-      }),
-    );
-    await this.phoneNumberRepository.save(phoneEntities);
-
-    // Create provider profile when applicable
-    let savedProvider: Provider | null = null;
-    if (signUpRequest.role === RoleEnum.PROVIDER) {
-      const providerEntity = this.providerRepository.create({
-        id: `PR_${StringUtils.generateRandomAlphaNumeric(10)}`,
-        experienceYear: signUpRequest.experienceYear,
-        ratePerHour: signUpRequest.ratePerHour,
-        specialization: signUpRequest.specialization,
-        rating: 0,
-        jobCompleted: 0,
-        user: savedUser,
-      });
-      savedProvider = await this.providerRepository.save(providerEntity);
-    }
-
-    // Return response without password
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { password, ...userWithoutPassword } = savedUser;
 
     return {
-      message:
-        signUpRequest.role === RoleEnum.PROVIDER
-          ? 'Provider registered successfully'
-          : 'Customer registered successfully',
-      data: {
-        user: {
-          ...userWithoutPassword,
-          phoneNumbers: phoneEntities.map((p) => p.phoneNumber),
-          ...(savedProvider && {
-            provider: {
-              id: savedProvider.id,
-              experienceYear: savedProvider.experienceYear,
-              ratePerHour: savedProvider.ratePerHour,
-              specialization: savedProvider.specialization,
-              rating: savedProvider.rating,
-              jobCompleted: savedProvider.jobCompleted,
-            },
-          }),
-        },
-      },
+      message: 'User registered successfully',
+      data: { user: userWithoutPassword },
     };
   }
   /**

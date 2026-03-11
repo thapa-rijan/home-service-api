@@ -13,6 +13,7 @@ import { Role } from './modules/auth/entity/role.entity';
 import { Category } from './modules/category/entity/category.entity';
 import { Service } from './modules/services/entity/service.entity';
 import { File } from './modules/fileUpload/entity/file.entity';
+import { IdentityProof } from './modules/auth/entity/identity-proof.entity';
 import { FileUploadModule } from './modules/fileUpload/fileUpload.module';
 
 @Module({
@@ -36,6 +37,7 @@ import { FileUploadModule } from './modules/fileUpload/fileUpload.module';
         Category,
         Service,
         File,
+        IdentityProof,
       ],
       synchronize: true, // Set to false in production
       logging: false,
