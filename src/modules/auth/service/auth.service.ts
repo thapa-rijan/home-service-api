@@ -62,13 +62,15 @@ export class AuthService {
    */
   generateAccessTokenFromRefreshToken(refreshToken: string): string {
     try {
-      const decoded = this.jwtService.verify(refreshToken);
+      const decoded = this.jwtService.verify<
+        JwtPayload & { exp?: number; iat?: number; nbf?: number }
+      >(refreshToken);
 
       // Create clean payload with only our custom properties
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { exp, iat, nbf, ...cleanPayload } = decoded;
 
-      return this.generateAccessToken(cleanPayload as JwtPayload);
+      return this.generateAccessToken(cleanPayload);
     } catch {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
@@ -82,13 +84,15 @@ export class AuthService {
    */
   generateRefreshTokenFromRefreshToken(refreshToken: string): string {
     try {
-      const decoded = this.jwtService.verify(refreshToken);
+      const decoded = this.jwtService.verify<
+        JwtPayload & { exp?: number; iat?: number; nbf?: number }
+      >(refreshToken);
 
       // Create clean payload with only our custom properties
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { exp, iat, nbf, ...cleanPayload } = decoded;
 
-      return this.generateRefreshToken(cleanPayload as JwtPayload);
+      return this.generateRefreshToken(cleanPayload);
     } catch {
       throw new UnauthorizedException('Invalid or expired refresh token');
     }
@@ -100,7 +104,7 @@ export class AuthService {
    * @returns Object containing new access token and refresh token.
    * @throws UnauthorizedException if the refresh token is invalid or expired.
    */
-  async refreshAccessToken(refreshToken: string) {
+  refreshAccessToken(refreshToken: string) {
     try {
       const newAccessToken =
         this.generateAccessTokenFromRefreshToken(refreshToken);
@@ -197,16 +201,15 @@ export class AuthService {
       address: user.address,
     };
 
-    // Remove password from response
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { password, ...loggedInUser } = user;
+    // Return only required fields
+    const { id, fullName, email, status, role } = user;
 
     return {
       message: 'Login successful',
       data: {
         accessToken: this.generateAccessToken(payload),
         refreshToken: this.generateRefreshToken(payload),
-        user: loggedInUser,
+        user: { id, fullName, email, status, role },
       },
     };
   }
