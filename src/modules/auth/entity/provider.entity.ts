@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { User } from './user.entity';
+import { Service } from 'src/modules/services/entity/service.entity';
 
 @Entity()
 export class Provider {
@@ -29,12 +30,18 @@ export class Provider {
   @Column({ type: 'int', default: 0 })
   jobCompleted: number;
 
-   
   @OneToOne(() => User, (user: User) => user.provider, {
     onDelete: 'CASCADE',
   })
   @JoinColumn({ name: 'userId' })
   user: User;
+
+  @OneToOne(() => Service, (service) => service.provider, {
+    cascade: true,
+    eager: true,
+  })
+  @JoinColumn({ name: 'serviceId' })
+  service: Service;
 
   @CreateDateColumn()
   createdAt: Date;

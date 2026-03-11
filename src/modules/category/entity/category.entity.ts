@@ -1,4 +1,5 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, PrimaryGeneratedColumn, OneToOne } from 'typeorm';
+import { Service } from 'src/modules/services/entity/service.entity';
 
 @Entity()
 export class Category {
@@ -7,4 +8,7 @@ export class Category {
 
   @Column({ type: 'varchar', length: 255 })
   name: string;
+
+  @OneToOne(() => Service, (service) => service.category)
+  service: Service;
 }
