@@ -44,6 +44,28 @@ $ yarn run start:dev
 $ yarn run start:prod
 ```
 
+## SMTP setup for OTP email (free options)
+
+Configure these environment variables before calling OTP request API:
+
+```env
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_SECURE=false
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+SMTP_FROM=Home Service <your-email@gmail.com>
+```
+
+Notes:
+
+- For Gmail, use an App Password (not your normal Gmail password).
+- You can also use free SMTP providers like Brevo:
+  - `SMTP_HOST=smtp-relay.brevo.com`
+  - `SMTP_PORT=587`
+  - `SMTP_USER=<brevo-login>`
+  - `SMTP_PASS=<brevo-smtp-key>`
+
 ## Run tests
 
 ```bash

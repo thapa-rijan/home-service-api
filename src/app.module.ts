@@ -15,6 +15,8 @@ import { Service } from './modules/services/entity/service.entity';
 import { File } from './modules/fileUpload/entity/file.entity';
 import { IdentityProof } from './modules/auth/entity/identity-proof.entity';
 import { FileUploadModule } from './modules/fileUpload/fileUpload.module';
+import { OtpVerification } from 'src/modules/otp_verification/entity/otp-verification.entity';
+import { OtpVerificationModule } from './modules/otp_verification/otp-verification.module';
 
 @Module({
   imports: [
@@ -38,6 +40,7 @@ import { FileUploadModule } from './modules/fileUpload/fileUpload.module';
         Service,
         File,
         IdentityProof,
+        OtpVerification,
       ],
       synchronize: true, // Set to false in production
       logging: false,
@@ -47,6 +50,7 @@ import { FileUploadModule } from './modules/fileUpload/fileUpload.module';
     ProviderModule,
     CategoryModule,
     FileUploadModule,
+    OtpVerificationModule,
   ],
   controllers: [],
   providers: [],
